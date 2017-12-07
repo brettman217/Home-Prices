@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec  4 17:09:23 2017
 
-@author: feebr01
-"""
 
 import pandas as pd
 import numpy as np
@@ -86,16 +81,17 @@ X_Opt = X_train[['const','OverallQual', 'YearBuilt', 'YearRemodAdd', 'MasVnrArea
 regressor_OLS = sm.OLS(endog = y_train, exog = X_Opt).fit()
 regressor_OLS.summary()
 
-#use variable above to slim down X_Test to significant variables only
+#Align X_Test to significant variables only
 SigOnly_X_test = X_test[['const','OverallQual', 'YearBuilt', 'YearRemodAdd', 'MasVnrArea', 'BsmtFinSF1',
        'TotalBsmtSF', 'GrLivArea',
        'Fireplaces', 'GarageArea', 'WoodDeckSF',
        'Neighborhood_NoRidge', 'Neighborhood_NridgHt', 'BsmtExposure_Gd',
        'SaleType_New']]
 
+#Create open datafram to track results of each model
 accuracy_list = pd.DataFrame(columns = ['model', 'accuracy', 'stdev'])
-############################################################################################ FIT LR Opt MODEL
-#84% accuracy w 6% stdev in cross val
+
+############################################################################################ FIT LR Model X_Opt Variables
 from sklearn.linear_model import LinearRegression
 lr = LinearRegression()
 lr.fit(X_Opt, y_train)
@@ -114,7 +110,7 @@ acc_stdev = accuracies.std() # variation across the 10 folds
 accuracy_list= accuracy_list.append({'model': 'lr', 'accuracy': acc_mean, 'stdev': acc_stdev}, ignore_index=True)
 
 
-########################################################################################## RANDOM FOREST 1000
+########################################################################################## RANDOM FOREST 1000 to all X
 from sklearn.ensemble import RandomForestRegressor
 rfr = RandomForestRegressor(n_estimators=1000)
 
@@ -131,28 +127,29 @@ accuracy_list= accuracy_list.append({'model': 'rfr', 'accuracy': acc_mean, 'stde
 accuracy_list.sort_values('accuracy', ascending = 0, inplace = True)
 
 
-############################################################################################################################################################### BRING IN COMPETITION DATA
+################################################################################################################## BRING IN COMPETITION DATA
 import pandas as pd
-import numpy as np
 
 comp = pd.read_csv('HomePrice_test.csv')
 
-#Drop too many na columns
+#Drop too many na columns aligned with train data
 comp.isnull().sum()
 comp = comp.drop(['LotFrontage', 'Alley','FireplaceQu', 'PoolQC', 'Fence', 'MiscFeature' ], axis = 1)
 
-# Fill garages nan with None
+# Fill garages nan and other Nan with None
 comp['GarageType'].fillna('None', inplace = True)
 comp['GarageYrBlt'].fillna('None', inplace = True)   
 comp['GarageFinish'].fillna('None', inplace = True)
 comp['GarageQual'].fillna('None', inplace = True)
 comp['GarageCond'].fillna('None', inplace = True)
+
+#Fill empty values with mean of column
 comp['MasVnrArea'].fillna(comp['MasVnrArea'].mean(), inplace = True)
+
 #Fill test set NAs with zeroes
 comp['BsmtFinSF1'].fillna(0, inplace = True)   
 comp['TotalBsmtSF'].fillna(0, inplace = True)   
 comp['GarageArea'].fillna(0, inplace = True)  
-
 
 #Fill basement nan with None
 comp['BsmtQual'].fillna('None', inplace = True)
@@ -194,10 +191,9 @@ X_Opt_Comp = Xcomp[['const','OverallQual', 'YearBuilt', 'YearRemodAdd', 'MasVnrA
 
 
 
-############################################################################################ FIT LR Opt MODEL
+############################################################################################ FIT FINAL MODELS
 comp_lr = lr.predict(X_Opt_Comp)
 comp_rfr = rfr.predict(X_Opt_Comp)
-
 
 
 
