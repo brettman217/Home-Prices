@@ -116,7 +116,7 @@ accuracy_list= accuracy_list.append({'model': 'rfr', 'accuracy': acc_mean, 'stde
 accuracy_list.sort_values('accuracy', ascending = 0, inplace = True)
 
 
-############################################################################################################################################################### BRING IN COMPETITION DATA
+########################################################################################### BRING IN COMPETITION DATA
 import pandas as pd
 import numpy as np
 
